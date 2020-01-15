@@ -12,8 +12,6 @@ library(ggplot2)
 qplot(x=Limb.Width, y=Limb.Length, data=MyData,
       size=I(3), colour=I("navy blue"),
       xlab="Species Limb Width", ylab="Species Limb Length", main="Relationship Between Species' Limb Length and Width",
-      
-      
       ) + theme_pubworthy()
 
 theme_pubworthy <- function (base_size = 12, base_family = "") {
@@ -27,17 +25,15 @@ theme_pubworthy <- function (base_size = 12, base_family = "") {
       axis.ticks = element_blank(), 
       panel.background = element_rect(fill="white"),
       panel.border = element_blank(),
-      plot.title=element_text(face="bold", size=24),
+      plot.title=element_text(face="bold", size=18),
       legend.position="none"
     ) 
 }
 
-pdf("LimbRelationshipGraph.pdf")
+pdf("LimbRelationshipGraphFINALVERSION.pdf")
 qplot(x=Limb.Width, y=Limb.Length, data=MyData,
-            size=I(3), colour=I("navy blue"),
-            xlab="Species Limb Width", ylab="Species Limb Length", main="Relationship Between Species' Limb Length and Width",
-            
-            
+      size=I(3), colour=I("navy blue"),
+      xlab="Species Limb Width", ylab="Species Limb Length", main="Relationship Between Species' Limb Length and Width",
 ) + theme_pubworthy()
 
 dev.off()
