@@ -14,6 +14,7 @@ qplot(x=Limb.Width, y=Limb.Length, data=MyData,
       xlab="Species Limb Width", ylab="Species Limb Length", main="Relationship Between Species' Limb Length and Width",
       ) + theme_pubworthy()
 
+#Making it look prettier
 theme_pubworthy <- function (base_size = 12, base_family = "") {
   theme_classic(base_size = base_size, base_family = base_family) %+replace% 
     theme(
