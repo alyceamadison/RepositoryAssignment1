@@ -1,0 +1,134 @@
+---
+title: "DataAnalysis"
+author: "Alycea Wood"
+date: "1/21/2020"
+output: html_document
+---
+
+##Importing the Dataset
+
+First, we are going to read measurements.csv into an object called "MData". First, you need to load in the "dplyr" package, then bring in the data set using the "read.csv" function. 
+
+```{r importing measurement data, echo=T, include=F}
+library(dplyr)
+library(ggplot2)
+library(readr)
+```
+
+```{r importing dataset, echo=T}
+MData = read.csv("~/Desktop/BIOL 432/Assignment 1/biol432/measurements.csv")
+```
+
+##Renaming Columns
+
+Now that it appears to have been imputted correctly, we are going to change the column names to 3-letter abbreviations. I am going to use the "names()" function, where I will identify that I am using the MData as my dataset in the brackets, then which column name I want to change in the square brackets. 
+
+```{r column names, echo=T}
+names(MData)[1] = "ID#"
+names(MData)[2] = "sps"
+names(MData)[3] = "lbw"
+names(MData)[4] = "unw"
+names(MData)[5] = "lbl"
+names(MData)[6] = "unl"
+names(MData)
+```
+
+##Converting Units
+
+Now that I renamed the columns, it's time to convert the units so they're all the same. 
+
+```{r converting units, echo=T}
+#Changing the Length and Width columns
+MData$lbw[MData$unw == "cm"] = MData$lbw[MData$unw == "cm"]*10
+MData$lbl[MData$unl == "cm"] = MData$lbl[MData$unl == "cm"]*10
+
+#Changing the Unit columns
+MData$unw = gsub("cm", "mm", MData$unw)
+MData$unl = gsub("cm", "mm", MData$unl)
+
+#Making sure it worked
+head(MData)
+```
+
+#Adding a "Volume" Column
+
+Now I need to add a new column, that calculates volume using the length and width values. I will use the equation for a cylinder and the known length and width values to do this.
+
+```{r volume, echo=T}
+MData$volume = pi*((MData$lbw/2)^2*MData$lbl)
+
+#Making sure it worked
+head(MData)
+```
+
+##Plotting Width vs. Length
+
+Now, let's plot Width vs. Length and make a nice plot. I will use the qplot() function to build my plot. Adding axis titles will be done using the xlab(), ylab(), and main() functions. Making the colour and size of the points on my graph will be done using the size=I() and colour=I() functions. Finally, I will make the theme a little nicer using the +theme_classic() function.
+
+```{r Width vs Length plot, echo=T}
+qplot(x=MData$lbw, y=MData$lbl, data=MData,
+      xlab="Limb Width (mm)", ylab="Limb Length (mm)", main="Limb Width vs. Limb Length Measurements",
+      size=I(8), colour=I("blue")
+      )+theme_classic()
+```
+
+##Plotting Width vs Length 
+####For Values that Also Have Above Average Volumes
+
+I have now made a graph that depicts all limb width and length values against each other, now to plot only for species that have an above-average volume. First, I need to calculate what the average volume is, using the mean() function. Then, I will make a new object called "AvgMData", which only pulls out the ID#s that are larger than the average value (in this case, my average was 7235810). Then, I will just re-use the qplot() function I used in the previous step, and just replace the "data" I use with the new object I just created, "AvgMData".
+
+```{r Width vs Length for above-average volume, echo=T}
+mean(MData$volume)
+AvgMData = filter(MData, MData$volume > 7235810)
+qplot(x=AvgMData$lbw, y=AvgMData$lbl, data=AvgMData,
+      xlab="Limb Width (mm)", ylab="Limb Length (mm)", main="Limb Width vs. Limb Length Measurements",
+      size=I(8), colour=I("blue")
+      )+theme_classic()
+```
+
+##Making a Table
+####Only with Species that have Below Average Volumes
+
+Now I have to make a table that only shows the Species and Volume columns, for ID#s that are below average volume. I'll first start by making a new object, "LowMData", which only pulls out the ID#s with volume values below the average.
+
+```{r table for Species vs Volume, echo=T}
+LowMData = filter(MData, MData$volume < 7235810)
+SelectLowMData = select(LowMData, sps, volume)
+
+#Making sure it worked
+print(SelectLowMData)
+```
+
+##Adding a New "Imaginary" Group Column
+
+Now I am going to group the species into 2 more "imaginary" categories, so first I need to add a new column with these categories, I am going with "Invasiveness" with "Native" and "Invasive" being my two categories.
+
+```{r new column, echo=T}
+MData$Invasiveness = c("NATIVE", "INVASIVE")
+
+#Making sure it worked
+head(MData)
+```
+
+##Creating Tables Using These New Groups
+
+Now that I've added a new category "Invasiveness" with the two groups "NATIVE" and "INVASIVE", I am going to find the mean and SD of Length, Width, and Volume for each separate group. If I were to knit this all as one table, it will cut off my mean and SD values for volume, so for that reason I have divided my values into three separate tables, one for width, one for length, and one for volume.
+
+####Table for Width
+```{r making a table with only limb width, echo=T}
+GrpMData = group_by(MData, Invasiveness)
+print(summarise(GrpMData, MeanLimbWidth = mean(lbw), SDLimbWidth = sd(lbw)))
+```
+
+####Table for Length
+```{r making a table with only limb length, echo=T}
+GrpMData = group_by(MData, Invasiveness)
+print(summarise(GrpMData,MeanLimbLength = mean(lbl), SDLimbLength = sd(lbl)))
+```
+
+####Table for Volume
+```{r making a table with only limb volume, echo=T}
+GrpMData = group_by(MData, Invasiveness)
+print(summarise(GrpMData,MeanLimbVolume = mean(volume), SDLimbVolume = sd(volume)))
+```
+
